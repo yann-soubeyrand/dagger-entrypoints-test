@@ -1,17 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 
 	"dagger.io/dagger"
 )
 
 func main() {
-	dagger.ServeCommands(run)
-}
-
-func run(ctx dagger.Context) (string, error) {
-	client := ctx.Client()
+	ctx := context.Background()
+	client, err := dagger.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
 
 	src := client.Host().Directory(".")
 
@@ -22,10 +25,8 @@ func run(ctx dagger.Context) (string, error) {
 
 	out, err := container.Stdout(ctx)
 	if err != nil {
-		return "", err
+		log.Fatal(err)
 	}
 
 	fmt.Println(out)
-
-	return out, nil
 }
