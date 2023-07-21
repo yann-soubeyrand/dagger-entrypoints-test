@@ -1,31 +1,39 @@
 package main
 
 import (
-	"fmt"
-
 	"dagger.io/dagger"
 )
 
 func main() {
-	dagger.ServeCommands(run)
+	dagger.ServeCommands(Test)
 }
 
-func run(ctx dagger.Context) (string, error) {
-	client := ctx.Client()
+type TestTarget struct{}
 
-	src := client.Host().Directory(".")
+func Test(ctx dagger.Context) (TestTarget, error) {
+	return TestTarget{}, nil
+}
 
-	container := client.Container().From("registry.access.redhat.com/ubi9/ubi-micro").
-		WithMountedDirectory("/mnt", src).
-		WithEntrypoint([]string{"sh", "-c"}).
-		WithExec([]string{"ls -laZ /mnt"})
+func (TestTarget) One(ctx dagger.Context, arg string) (string, error) {
+	return ctx.Client().
+		Container().
+		From("registry.access.redhat.com/ubi9/ubi-micro").
+		WithExec([]string{"echo", arg}).
+		Stdout(ctx)
+}
 
-	out, err := container.Stdout(ctx)
-	if err != nil {
-		return "", err
-	}
+func (TestTarget) Two(ctx dagger.Context, aRg string) (string, error) {
+	return ctx.Client().
+		Container().
+		From("registry.access.redhat.com/ubi9/ubi-micro").
+		WithExec([]string{"echo", aRg}).
+		Stdout(ctx)
+}
 
-	fmt.Println(out)
-
-	return out, nil
+func (TestTarget) Three(ctx dagger.Context, aRG string) (string, error) {
+	return ctx.Client().
+		Container().
+		From("registry.access.redhat.com/ubi9/ubi-micro").
+		WithExec([]string{"echo", aRG}).
+		Stdout(ctx)
 }
